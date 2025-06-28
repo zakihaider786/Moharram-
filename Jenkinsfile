@@ -1,14 +1,32 @@
 pipeline {
-  agent any
-  stages {
-    stage('Deploy to Desktop') {
-      steps {
-        bat(script: 'xcopy /E /Y "%WORKSPACE%\\*" "C:\\Users\\CT-Zaki\\Desktop\\moharram"', returnStatus: true, returnStdout: true)
-      }
+    agent any
+
+    triggers {
+        githubPush()
     }
 
-  }
-  environment {
-    DEPLOY_DIR = 'C:\\Users\\CT-Zaki\\Desktop\\moharram'
-  }
+    stages {
+        stage('Clean Old Files') {
+            steps {
+                bat '''
+                rmdir /S /Q "C:\\Users\\CT-Zaki\\Desktop\\moharram"
+                mkdir "C:\\Users\\CT-Zaki\\Desktop\\moharram"
+                '''
+            }
+        }
+
+        stage('Deploy Files') {
+            steps {
+                bat '''
+                xcopy /E /Y "%WORKSPACE%\\*" "C:\\Users\\CT-Zaki\\Desktop\\moharram"
+                '''
+            }
+        }
+
+        stage('Done') {
+            steps {
+                echo '✅ Deployment Successful to Desktop!'
+            }
+        }
+    }
 }
